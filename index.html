@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <title>Image HSL Editor SPA</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Material Design Icons CDN -->
+    <link
+      href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Dropdown styles */
+      .dropdown-menu {
+        display: none;
+      }
+      .dropdown-menu.show {
+        display: block;
+      }
+      /* Prevent scrolling on the body */
+      body {
+        overflow: hidden;
+      }
+      /* Drop area styling */
+      .drop-area {
+        border: 2px dashed #cbd5e0;
+        border-radius: 0.375rem;
+        padding: 1rem;
+      }
+      .drop-area.hover {
+        background-color: #edf2f7;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-4 space-y-4">
+      <h1 class="text-xl font-bold text-center">Image HSL Editor</h1>
+
+      <!-- File Upload Area with Drag & Drop Support -->
+      <div
+        id="uploadArea"
+        class="drop-area text-center cursor-pointer"
+      >
+        <p class="text-gray-600 text-sm mb-1">
+          Click or drag & drop an image here (JPG, PNG, WEBP)
+        </p>
+        <input
+          id="fileInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="hidden"
+        />
+        <button
+          id="selectFile"
+          class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm focus:outline-none"
+        >
+          Select Image
+        </button>
+      </div>
+
+      <!-- Clear Image Button -->
+      <div class="flex justify-center">
+        <button
+          id="clearImage"
+          class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm focus:outline-none"
+        >
+          Clear Image
+        </button>
+      </div>
+
+      <!-- Canvas Preview (scaled-down) with Drag & Drop Support -->
+      <div class="flex justify-center">
+        <canvas
+          id="imageCanvas"
+          class="border rounded drop-area"
+          style="width: 240px; height: auto;"
+        ></canvas>
+      </div>
+
+      <!-- HSL Sliders with Numeric Inputs and Reset Icon Buttons -->
+      <div class="space-y-3">
+        <!-- Hue Control -->
+        <div>
+          <label for="hue" class="block text-gray-700 font-medium">
+            Hue (°)
+          </label>
+          <div class="flex items-center space-x-2">
+            <input
+              type="range"
+              id="hue"
+              min="-180"
+              max="180"
+              value="0"
+              class="w-full"
+            />
+            <input
+              type="number"
+              id="hueInput"
+              min="-180"
+              max="180"
+              value="0"
+              class="w-16 border rounded p-1 text-center"
+            />
+            <!-- Reset Icon Button using mdi:restart -->
+            <button
+              id="resetHue"
+              title="Reset Hue"
+              class="p-1 focus:outline-none"
+            >
+              <span class="mdi mdi-restart text-gray-600 text-xl"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Saturation Control -->
+        <div>
+          <label for="saturation" class="block text-gray-700 font-medium">
+            Saturation (%)
+          </label>
+          <div class="flex items-center space-x-2">
+            <input
+              type="range"
+              id="saturation"
+              min="0"
+              max="300"
+              value="100"
+              class="w-full"
+            />
+            <input
+              type="number"
+              id="saturationInput"
+              min="0"
+              max="300"
+              value="100"
+              class="w-16 border rounded p-1 text-center"
+            />
+            <!-- Reset Icon Button using mdi:restart -->
+            <button
+              id="resetSat"
+              title="Reset Saturation"
+              class="p-1 focus:outline-none"
+            >
+              <span class="mdi mdi-restart text-gray-600 text-xl"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lightness Control -->
+        <div>
+          <label for="light" class="block text-gray-700 font-medium">
+            Lightness (%)
+          </label>
+          <div class="flex items-center space-x-2">
+            <input
+              type="range"
+              id="light"
+              min="0"
+              max="300"
+              value="100"
+              class="w-full"
+            />
+            <input
+              type="number"
+              id="lightInput"
+              min="0"
+              max="300"
+              value="100"
+              class="w-16 border rounded p-1 text-center"
+            />
+            <!-- Reset Icon Button using mdi:restart -->
+            <button
+              id="resetLight"
+              title="Reset Lightness"
+              class="p-1 focus:outline-none"
+            >
+              <span class="mdi mdi-restart text-gray-600 text-xl"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split Export Button with Dropdown -->
+      <div class="flex justify-center relative">
+        <div class="inline-flex shadow-sm">
+          <!-- Main export button -->
+          <button
+            id="exportBtn"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-l border border-blue-600 focus:outline-none text-sm"
+          >
+            Export Image
+          </button>
+          <!-- Dropdown toggle button -->
+          <button
+            id="exportToggle"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-2 rounded-r border-t border-b border-r border-blue-600 focus:outline-none text-sm"
+          >
+            &#x25BC;
+          </button>
+        </div>
+        <!-- Dropdown menu -->
+        <ul
+          id="exportDropdown"
+          class="absolute top-full mt-1 bg-white border border-gray-200 rounded shadow-md dropdown-menu z-10 w-32"
+        >
+          <li>
+            <button
+              data-format="png"
+              class="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+            >
+              PNG
+            </button>
+          </li>
+          <li>
+            <button
+              data-format="jpeg"
+              class="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+            >
+              JPG
+            </button>
+          </li>
+          <li>
+            <button
+              data-format="webp"
+              class="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+            >
+              WEBP
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      // Elements
+      const fileInput = document.getElementById("fileInput");
+      const uploadArea = document.getElementById("uploadArea");
+      const clearImageBtn = document.getElementById("clearImage");
+      const canvas = document.getElementById("imageCanvas");
+      const ctx = canvas.getContext("2d");
+
+      // HSL Controls
+      const hueSlider = document.getElementById("hue");
+      const satSlider = document.getElementById("saturation");
+      const lightSlider = document.getElementById("light");
+
+      const hueInput = document.getElementById("hueInput");
+      const satInput = document.getElementById("saturationInput");
+      const lightInput = document.getElementById("lightInput");
+
+      const resetHueBtn = document.getElementById("resetHue");
+      const resetSatBtn = document.getElementById("resetSat");
+      const resetLightBtn = document.getElementById("resetLight");
+
+      // Export Button Components
+      const exportBtn = document.getElementById("exportBtn");
+      const exportToggle = document.getElementById("exportToggle");
+      const exportDropdown = document.getElementById("exportDropdown");
+
+      let originalFileName = "edited-image";
+      let originalImage = null;
+      let img = new Image();
+
+      // --- Drag & Drop Support ---
+      // Prevent default drag behaviors
+      ["dragenter", "dragover", "dragleave", "drop"].forEach(
+        (eventName) => {
+          document.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        }
+      );
+
+      // Highlight drop area on dragover for uploadArea and canvas.
+      [uploadArea, canvas].forEach((area) => {
+        area.addEventListener("dragover", () => {
+          area.classList.add("hover");
+        });
+        area.addEventListener("dragleave", () => {
+          area.classList.remove("hover");
+        });
+        area.addEventListener("drop", (e) => {
+          area.classList.remove("hover");
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          if (files && files[0]) {
+            loadFile(files[0]);
+          }
+        });
+      });
+
+      // Allow clicking the "Select Image" button to open file dialog.
+      document.getElementById("selectFile").addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // File input change event.
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+          loadFile(e.target.files[0]);
+        }
+      });
+
+      // Function to load the image file.
+      function loadFile(file) {
+        if (!file) return;
+        originalFileName = file.name.replace(/(\.[\w\d_-]+)$/i, "");
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          img = new Image();
+          img.onload = () => {
+            originalImage = img;
+            redrawCanvas();
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+      // --- End Drag & Drop & Load File ---
+
+      // Clear the selected image.
+      clearImageBtn.addEventListener("click", () => {
+        originalImage = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Optionally, reset the file input value to allow re-selection.
+        fileInput.value = "";
+      });
+
+      // Redraw canvas using the full-resolution stored image and current HSL settings.
+      function redrawCanvas() {
+        if (!originalImage) return;
+        canvas.width = originalImage.width;
+        canvas.height = originalImage.height;
+        ctx.filter = `
+          hue-rotate(${hueSlider.value}deg)
+          saturate(${satSlider.value}%)
+          brightness(${lightSlider.value}%)
+        `;
+        ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+        ctx.filter = "none";
+      }
+
+      // Synchronize slider and numeric inputs.
+      function syncSliderAndInput(slider, numberInput) {
+        numberInput.value = slider.value;
+      }
+      function syncInputAndSlider(numberInput, slider) {
+        slider.value = numberInput.value;
+      }
+
+      // Listeners for slider input.
+      [hueSlider, satSlider, lightSlider].forEach((slider) => {
+        slider.addEventListener("input", (e) => {
+          if (e.target === hueSlider)
+            syncSliderAndInput(hueSlider, hueInput);
+          else if (e.target === satSlider)
+            syncSliderAndInput(satSlider, satInput);
+          else if (e.target === lightSlider)
+            syncSliderAndInput(lightSlider, lightInput);
+          redrawCanvas();
+        });
+      });
+
+      // Listeners for numeric inputs.
+      hueInput.addEventListener("change", () => {
+        syncInputAndSlider(hueInput, hueSlider);
+        redrawCanvas();
+      });
+      satInput.addEventListener("change", () => {
+        syncInputAndSlider(satInput, satSlider);
+        redrawCanvas();
+      });
+      lightInput.addEventListener("change", () => {
+        syncInputAndSlider(lightInput, lightSlider);
+        redrawCanvas();
+      });
+
+      // Individual reset buttons using mdi:restart icons.
+      resetHueBtn.addEventListener("click", () => {
+        hueSlider.value = 0;
+        hueInput.value = 0;
+        redrawCanvas();
+      });
+      resetSatBtn.addEventListener("click", () => {
+        satSlider.value = 100;
+        satInput.value = 100;
+        redrawCanvas();
+      });
+      resetLightBtn.addEventListener("click", () => {
+        lightSlider.value = 100;
+        lightInput.value = 100;
+        redrawCanvas();
+      });
+
+      // --- Export Functions ---
+      // Determines MIME type and extension.
+      function getExportFormatInfo(format) {
+        let mimeType = "image/png";
+        let extension = "png";
+        if (format === "jpeg") {
+          mimeType = "image/jpeg";
+          extension = "jpg";
+        } else if (format === "webp") {
+          mimeType = "image/webp";
+          extension = "webp";
+        }
+        return { mimeType, extension };
+      }
+
+      // Export the image.
+      function exportImage(selectedFormat = null) {
+        if (!originalImage) return;
+        // If no format selected, use the original file's type (infer from data URL).
+        let format = selectedFormat;
+        if (!format) {
+          if (originalImage.src.startsWith("data:image/jpeg"))
+            format = "jpeg";
+          else if (originalImage.src.startsWith("data:image/webp"))
+            format = "webp";
+          else format = "png";
+        }
+        const { mimeType, extension } = getExportFormatInfo(format);
+        const dataURL = canvas.toDataURL(mimeType);
+        const exportName = `${originalFileName}_modHSL.${extension}`;
+        const link = document.createElement("a");
+        link.href = dataURL;
+        link.download = exportName;
+        link.click();
+      }
+
+      // Main export button uses the original file type.
+      exportBtn.addEventListener("click", () => {
+        exportImage();
+      });
+
+      // Toggle dropdown menu.
+      exportToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        exportDropdown.classList.toggle("show");
+      });
+
+      // Dropdown menu options.
+      exportDropdown.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const format = e.currentTarget.getAttribute("data-format");
+          exportImage(format);
+          exportDropdown.classList.remove("show");
+        });
+      });
+
+      // Hide dropdown when clicking outside.
+      document.addEventListener("click", (e) => {
+        if (
+          !exportDropdown.contains(e.target) &&
+          e.target !== exportToggle
+        ) {
+          exportDropdown.classList.remove("show");
+        }
+      });
+    </script>
+  </body>
+</html>
