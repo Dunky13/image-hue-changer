@@ -315,6 +315,7 @@
           img = new Image();
           img.onload = () => {
             originalImage = img;
+            adjustCanvasSize();
             redrawCanvas();
           };
           img.src = event.target.result;
@@ -330,6 +331,25 @@
         // Optionally, reset the file input value to allow re-selection.
         fileInput.value = "";
       });
+
+      // Adjust canvas size based on viewport height.
+      function adjustCanvasSize() {
+        const viewportHeight = window.innerHeight;
+        const headerHeight = document.querySelector("h1").offsetHeight + 20; // 20px for padding
+        const uploadAreaHeight = uploadArea.offsetHeight + 20; // 20px for padding
+        const clearButtonHeight = clearImageBtn.offsetHeight + 20; // 20px for padding
+        const slidersHeight = document.querySelectorAll(".space-y-3")[0].offsetHeight + 20; // 20px for padding
+        const totalHeight =
+          headerHeight + uploadAreaHeight + clearButtonHeight + slidersHeight;
+
+        // Set the canvas height to fit within the remaining viewport height
+        const remainingHeight = viewportHeight - totalHeight;
+        if (remainingHeight > 0) {
+          canvas.style.height = `${remainingHeight}px`;
+        } else {
+          canvas.style.height = "0px"; // Hide if there's no space
+        }
+      }
 
       // Redraw canvas using the full-resolution stored image and current HSL settings.
       function redrawCanvas() {
@@ -462,6 +482,9 @@
           exportDropdown.classList.remove("show");
         }
       });
+
+      // Adjust canvas size on window resize.
+      window.addEventListener("resize", adjustCanvasSize);
     </script>
   </body>
 </html>
