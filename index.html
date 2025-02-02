@@ -11,11 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Material Design Icons CDN -->
     <script src="//code.iconify.design/1/1.0.6/iconify.min.js"></script>
-
-    <!-- <link
-      href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css"
-      rel="stylesheet"
-    /> -->
     <style>
       /* Dropdown styles */
       .dropdown-menu {
@@ -34,23 +29,24 @@
       body {
         overflow: hidden;
       }
-      /* Drop area styling */
-      .drop-area {
-        border: 2px dashed #cbd5e0;
-        border-radius: 0.375rem;
-        padding: 1rem;
-      }
-      .drop-area.hover {
+      /* Extra styling to show border for drop areas */
+      .drop-area:hover {
         background-color: #edf2f7;
       }
     </style>
   </head>
-  <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
-    <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-4 space-y-4">
+  <body class="bg-gray-100 flex items-center justify-center p-4 h-screen">
+    <!-- Outer container that takes full viewport height -->
+    <div
+      class="flex flex-col w-full max-w-md bg-white rounded-lg shadow-lg p-4 h-[90vh] my-[5vh]"
+    >
       <h1 class="text-xl font-bold text-center">Image HSL Editor</h1>
 
-      <!-- File Upload Area with Drag & Drop -->
-      <div id="uploadArea" class="drop-area text-center cursor-pointer">
+      <!-- File Upload Area -->
+      <div
+        id="uploadArea"
+        class="drop-area text-center cursor-pointer border-2 border-dashed border-gray-300 rounded p-4 mb-4"
+      >
         <p class="text-gray-600 text-sm mb-1">
           Click or drag & drop an image here (JPG, PNG, WEBP)
         </p>
@@ -76,17 +72,16 @@
         </div>
       </div>
 
-      <!-- Canvas Preview with Drag & Drop -->
-      <div class="flex justify-center">
+      <!-- Canvas container which fills available space -->
+      <div class="flex-1 flex justify-center items-center overflow-hidden mb-4">
         <canvas
           id="imageCanvas"
-          class="border rounded drop-area"
-          style="height: auto; max-height: 30vh"
+          class="border rounded drop-area max-w-full max-h-full"
         ></canvas>
       </div>
 
       <!-- HSL Controls -->
-      <div class="space-y-3">
+      <div class="space-y-3 mb-4">
         <!-- Hue -->
         <div>
           <label for="hue" class="block text-gray-700 font-medium">
@@ -112,7 +107,7 @@
             <button
               id="resetHue"
               title="Reset Hue"
-              class="p-1 focus:outline-none hover:bg-blue-100"
+              class="p-1 focus:outline-none hover:bg-blue-100 rounded"
             >
               <span
                 class="iconify text-gray-600 text-xl"
@@ -147,7 +142,7 @@
             <button
               id="resetSat"
               title="Reset Saturation"
-              class="p-1 focus:outline-none hover:bg-blue-100"
+              class="p-1 focus:outline-none hover:bg-blue-100 rounded"
             >
               <span
                 class="iconify text-gray-600 text-xl"
@@ -182,7 +177,7 @@
             <button
               id="resetLight"
               title="Reset Lightness"
-              class="p-1 focus:outline-none hover:bg-blue-100"
+              class="p-1 focus:outline-none hover:bg-blue-100 rounded"
             >
               <span
                 class="iconify text-gray-600 text-xl"
@@ -193,8 +188,8 @@
         </div>
       </div>
 
-      <!-- Export and Reset Controls (Export centered, Reset All to the right) -->
-      <div class="grid grid-cols-[1fr,auto,1fr] items-center space-x-4">
+      <!-- Export and Reset Controls -->
+      <div class="grid grid-cols-[1fr,auto,1fr] items-center relative">
         <div class="col-start-2 justify-self-end">
           <div class="inline-flex shadow-sm">
             <button
@@ -243,15 +238,18 @@
         <div class="col-start-3 justify-self-end">
           <button
             id="resetAll"
-            class="p-1 bg-gray-200 hover:bg-blue-100 text-white rounded text-sm focus:outline-none"
+            class="p-1 bg-gray-200 hover:bg-blue-100 text-white rounded focus:outline-none"
           >
-            <span class="iconify text-gray-600 text-xl" data-icon="mdi-backup-restore"></span>
+            <span
+              class="iconify text-gray-600 text-xl"
+              data-icon="mdi-backup-restore"
+            ></span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Global variables (these can be placed in a common script tag) -->
+    <!-- Global variables -->
     <script>
       // Global Elements
       const fileInput = document.getElementById("fileInput"),
@@ -260,7 +258,6 @@
         canvas = document.getElementById("imageCanvas"),
         ctx = canvas.getContext("2d");
 
-      const img = new Image();
       let originalImage = null;
       let originalFileName = "edited-image";
 
@@ -372,7 +369,7 @@
         });
       });
 
-      // Reset buttons for each slider individually
+      // Reset buttons for individual sliders
       resetBtns.hue.addEventListener("click", () => {
         sliders.hue.value = inputs.hue.value = 0;
         redrawCanvas();
@@ -386,7 +383,7 @@
         redrawCanvas();
       });
 
-      // Reset all sliders using the new button
+      // Reset all sliders using the reset-all button
       resetAllBtn.addEventListener("click", () => {
         sliders.hue.value = inputs.hue.value = 0;
         sliders.saturation.value = inputs.saturation.value = 100;
