@@ -55,22 +55,20 @@
           accept="image/jpeg,image/png,image/webp"
           class="hidden"
         />
-        <button
-          id="selectFile"
-          class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm focus:outline-none"
-        >
-          Select Image
-        </button>
-      </div>
-
-      <!-- Clear Image Button -->
-      <div class="flex justify-center">
-        <button
-          id="clearImage"
-          class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm focus:outline-none"
-        >
-          Clear Image
-        </button>
+        <div class="flex justify-center space-x-2">
+          <button
+            id="selectFile"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm focus:outline-none"
+          >
+            Select Image
+          </button>
+          <button
+            id="clearImage"
+            class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm focus:outline-none"
+          >
+            Clear Image
+          </button>
+        </div>
       </div>
 
       <!-- Canvas Preview (scaled-down) with Drag & Drop Support -->
@@ -78,7 +76,7 @@
         <canvas
           id="imageCanvas"
           class="border rounded drop-area"
-          style="width: 240px; height: auto;"
+          style="width: 240px; height: auto; max-height: 40vh;"
         ></canvas>
       </div>
 
@@ -315,7 +313,6 @@
           img = new Image();
           img.onload = () => {
             originalImage = img;
-            adjustCanvasSize();
             redrawCanvas();
           };
           img.src = event.target.result;
@@ -328,32 +325,13 @@
       clearImageBtn.addEventListener("click", () => {
         originalImage = null;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // Optionally, reset the file input value to allow re-selection.
         fileInput.value = "";
       });
-
-      // Adjust canvas size based on viewport height.
-      function adjustCanvasSize() {
-        const viewportHeight = window.innerHeight;
-        const headerHeight = document.querySelector("h1").offsetHeight + 20; // 20px for padding
-        const uploadAreaHeight = uploadArea.offsetHeight + 20; // 20px for padding
-        const clearButtonHeight = clearImageBtn.offsetHeight + 20; // 20px for padding
-        const slidersHeight = document.querySelectorAll(".space-y-3")[0].offsetHeight + 20; // 20px for padding
-        const totalHeight =
-          headerHeight + uploadAreaHeight + clearButtonHeight + slidersHeight;
-
-        // Set the canvas height to fit within the remaining viewport height
-        const remainingHeight = viewportHeight - totalHeight;
-        if (remainingHeight > 0) {
-          canvas.style.height = `${remainingHeight}px`;
-        } else {
-          canvas.style.height = "0px"; // Hide if there's no space
-        }
-      }
 
       // Redraw canvas using the full-resolution stored image and current HSL settings.
       function redrawCanvas() {
         if (!originalImage) return;
+        // Set the internal canvas dimensions to the image dimensions
         canvas.width = originalImage.width;
         canvas.height = originalImage.height;
         ctx.filter = `
@@ -435,7 +413,7 @@
       // Export the image.
       function exportImage(selectedFormat = null) {
         if (!originalImage) return;
-        // If no format selected, use the original file's type (infer from data URL).
+        // If no format selected, infer from the original image's source.
         let format = selectedFormat;
         if (!format) {
           if (originalImage.src.startsWith("data:image/jpeg"))
@@ -453,7 +431,7 @@
         link.click();
       }
 
-      // Main export button uses the original file type.
+      // Main export button uses the inferred original file type.
       exportBtn.addEventListener("click", () => {
         exportImage();
       });
@@ -482,9 +460,6 @@
           exportDropdown.classList.remove("show");
         }
       });
-
-      // Adjust canvas size on window resize.
-      window.addEventListener("resize", adjustCanvasSize);
     </script>
   </body>
 </html>
